@@ -206,8 +206,8 @@ def findModules(path):
             continue
         result += [os.path.join(dirpath, filename)
                    for filename in filenames
-                   if filename.endswith('.py')
-                   and not filename.startswith('.#')]
+                   if filename.endswith('.py') and
+                   not filename.startswith('.#')]
     return result
 
 

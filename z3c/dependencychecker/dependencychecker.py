@@ -480,8 +480,8 @@ def includes_from_django_settings(path):
             # We're looking for assignments with lists/tuples like
             # ``INSTALLED_APPS = [a, b, c]``.
             lists_or_tuples = [assignment.value for assignment in assignments
-                               if isinstance(assignment.value, _ast.List)
-                               or isinstance(assignment.value, _ast.Tuple)]
+                               if isinstance(assignment.value, _ast.List) or
+                               isinstance(assignment.value, _ast.Tuple)]
             for list_or_tuple in lists_or_tuples:
                 strings = [getattr(element, 's', None)
                            for element in list_or_tuple.elts]
@@ -512,9 +512,9 @@ def imports_from_doctests(path):
     for path, dirs, files in os.walk(path):
         for filename in [os.path.abspath(os.path.join(path, filename))
                          for filename in files
-                         if fnmatch.fnmatch(filename, '*.txt')
-                         or fnmatch.fnmatch(filename, '*.rst')
-                         or fnmatch.fnmatch(filename, '*.py')]:
+                         if fnmatch.fnmatch(filename, '*.txt') or
+                         fnmatch.fnmatch(filename, '*.rst') or
+                         fnmatch.fnmatch(filename, '*.py')]:
             lines = open(filename).readlines()
             for line in lines:
                 test_modules += re.findall(DOCTEST_IMPORT, line)
