@@ -24,6 +24,7 @@ import sys
 
 import pkg_resources
 
+from z3c.dependencychecker import configreader
 from z3c.dependencychecker import importchecker
 
 
@@ -295,7 +296,7 @@ def normalize_all(packages):
     return [normalize(package) for package in packages if package]
 
 
-def filter_missing(imports, required):
+def filter_missing(imports, required, provided=None):
     # For imports we want to keep the exact name, required can be normalized.
     required = normalize_all(required)
     missing = []
@@ -310,6 +311,25 @@ def filter_missing(imports, required):
                 # check with an extra dot.
                 found = True
         if not found:
+            alt_found = False
+            for provider, packages in provided.items():
+                for pkg in packages:
+                    normalized_pkg = normalize(pkg)
+                    if normalized_pkg == normalized_needed:
+                        alt_found = True
+                        break
+                    if normalized_needed.startswith(normalized_pkg + '.'):
+                        alt_found = True
+                        break
+                if alt_found:
+                    alt_found = provider
+                    break
+            if alt_found:
+                # TODO: do something with this.  And watch out: the alternative
+                # might be missing too!  This might need a recursive call.
+                # Also, flake8 complains that this function has gotten too
+                # complex...
+                print('Alternative %s found for %s' % (alt_found, needed))
             missing.append(needed)
     missing = sorted(set(missing))
     return missing
@@ -595,6 +615,10 @@ def main():
 
     name = name_from_setup()
     path = determine_path(args, name=name)
+
+    config = configreader.Config()
+    provided = config.provides()
+
     db = importchecker.ImportDatabase(path)
     db.findModules()
     unused_imports = db.getUnusedImports()
@@ -655,7 +679,8 @@ def main():
         fti_imports)
     install_missing = filter_missing(
         all_install_imports,
-        install_required + stdlib)
+        install_required + stdlib,
+        provided)
     print_modules(install_missing, "Missing requirements")
 
     all_test_imports = (
@@ -667,7 +692,8 @@ def main():
         fti_test_imports)
     test_missing = filter_missing(
         all_test_imports,
-        install_required + test_required + stdlib)
+        install_required + test_required + stdlib,
+        provided)
     print_modules(test_missing, "Missing test requirements")
 
     install_unneeded = filter_unneeded(

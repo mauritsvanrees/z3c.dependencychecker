@@ -1,0 +1,57 @@
+"""
+.. :doctest:
+
+Detailed tests for configreader:
+
+    >>> from z3c.dependencychecker import configreader
+
+
+Config parsing
+--------------
+
+By default the ``~/.pypirc`` of the user is read, plus ``setup.cfg``
+in the current package.  Anyone who runs this test, may have
+configured something there already, so we can only check that we get
+back an answer of type dictionary as expected::
+
+    >>> config = configreader.Config()
+    >>> isinstance(config.provides(), dict)
+    True
+
+For testing, we have a sample config file that we pass::
+
+    >>> config = configreader.Config(sample_setup_cfg)
+    >>> provides = config.provides()
+    >>> isinstance(provides, dict)
+    True
+    >>> provides.keys()
+    [u'zope2', u'another']
+
+Note that the our config section has ``Zope2`` with a capital `Z`, but
+this is parsed as ``zope2`` with all lowercase.  This may or may not
+be a problem::
+
+    >>> zope2 = provides[u'zope2']
+
+Commented out items do not appear in the list::
+
+    >>> u'commented.out' in zope2
+    False
+
+Trailing comments are removed, leaving their packages::
+
+    >>> u'trailing.comment' in zope2
+    True
+    >>> len([i for i in zope2 if u'#' in i])
+    0
+
+Let's get the whole list::
+
+    >>> zope2
+    [u'Products.Five', u'Testing', u'trailing.comment']
+
+Now check the other provider::
+
+    >>> another = provides[u'another']
+    >>> another
+    [u'spanish.inquisition', u'knights.ni']

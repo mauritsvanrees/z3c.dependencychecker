@@ -62,6 +62,9 @@ def setup(test):
     sys.argv[1:] = []
     sys.exit = mock_exit
     test.tempdir = tempfile.mkdtemp(prefix='dependencychecker')
+    sample_setup_cfg = pkg_resources.resource_filename(
+        'z3c.dependencychecker.tests', 'sample_setup.cfg')
+    test.globs['sample_setup_cfg'] = sample_setup_cfg
     sample1_source = pkg_resources.resource_filename(
         'z3c.dependencychecker.tests', 'sample1')
     sample1_dir = os.path.join(test.tempdir, 'sample1')
